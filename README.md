@@ -36,7 +36,7 @@ Enable the service to start on boot
    $ sudo systemctl enable ha-jt.service
    ```
 
-    Start the service
+Start the service
    ```
    $ sudo systemctl start ha-jt.service
    ```
