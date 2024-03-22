@@ -1,0 +1,13 @@
+[Unit]
+Description=Juntek Battery Monitor MQTT proxy for Home Assistant
+After=multi-user.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/junctek_monitor
+ExecStart=/home/pi/junctek_monitor/venv/bin/python3 /home/pi/junctek_monitor/juntek485.py -i10 -q
+Restart=on-failure
+SyslogIdentifier=ha-jt
+
+[Install]
+WantedBy=multi-user.target
