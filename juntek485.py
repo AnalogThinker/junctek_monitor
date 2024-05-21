@@ -13,7 +13,7 @@ import math
 import paho.mqtt.publish as publish
 import config
 
-
+discovery_info_sent = False
 
 class JTData:
     def __init__(self) -> None:
@@ -23,7 +23,7 @@ class JTData:
 class JTInfo:
     def __init__(self) -> None:
         self.data = JTData()
-        self.discovery_info_sent = False
+        global discovery_info_sent
         self.name = "Juntek Monitor"
         #Capture data from RS485
         with serial.Serial(config.RS485, baudrate=115200, timeout=1) as serialHandle:
@@ -42,17 +42,21 @@ class JTInfo:
         self.data.jt_batt_v = int(values[2])/100
         self.data.jt_current = int(values[3])/100
         self.data.jt_watts = math.ceil(calc_watts*100)/100
-        self.data.jt_batt_charging = int(values[11])
+        #self.data.jt_batt_charging = int(values[11])
         self.data.jt_soc = math.ceil(int(values[4]) / config.BATT_CAP) /10
         self.data.jt_ah_remaining = int(values[4])/1000
         self.data.jt_acc_cap = math.ceil(int(values[6])/1000)/100
         self.data.jt_min_remaining = math.ceil(int(values[7])/60)
         self.data.jt_temp = int(values[8])-100
 
-        #Negative values if Discharging
-        if self.data.jt_batt_charging == 0:
-            self.data.jt_watts = self.data.jt_watts * -1
-            self.data.jt_current = self.data.jt_current * -1
+        #Negative values if Discharging (0)
+        if int(values[11]) == 0:
+            self.data.jt_watts_neg = self.data.jt_watts
+            self.data.jt_watts = 0
+        else:
+            self.data.jt_watts = self.data.jt_watts
+            self.data.jt_watts_neg = 0
+
 
         #Output values on screen
         for k, v in self.data.__dict__.items():
@@ -64,7 +68,7 @@ class JTInfo:
 #    def publish(self):
 
         # Publish Home Assistant discovery info to MQTT on first run
-        if self.discovery_info_sent is False:
+        if discovery_info_sent is False:
             msg = "Publishing Discovery information to Home Assistant"
             logger.info(msg)
 
@@ -94,7 +98,7 @@ class JTInfo:
                     auth=auth,
                 )
 
-            self.discovery_info_sent = True
+            discovery_info_sent = True
 
         # Combine sensor updates for MQTT
         mqtt_msgs = []
@@ -134,7 +138,6 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-
 if args.debug:
     logger.warning("Setting logging level to DEBUG")
     logger.setLevel(logging.DEBUG)
@@ -146,8 +149,7 @@ if not args.quiet:
 logger.info("Starting up")
 
 while True:
-    try:
-        jt = JTInfo()
-    except Exception as e:
-        print(f"Error occured: {e}")
-    time.sleep(5)
+    jt = JTInfo()
+    if not args.interval:
+        break
+    time.sleep(args.interval)
