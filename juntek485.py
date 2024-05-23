@@ -59,8 +59,8 @@ class JTInfo:
 
 
         #Output values on screen
-        for k, v in self.data.__dict__.items():
-            print(f"{k} = {v}")
+#       for k, v in self.data.__dict__.items():
+#           print(f"{k} = {v}")
 
 
 
@@ -149,7 +149,11 @@ if not args.quiet:
 logger.info("Starting up")
 
 while True:
-    jt = JTInfo()
-    if not args.interval:
-        break
-    time.sleep(args.interval)
+    try:
+        jt = JTInfo()
+        if not args.interval:
+            break
+        time.sleep(args.interval)
+    except Exception as err:
+        logger.warning(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Error : {err}, {type(err)}")
+        time.sleep(5)
