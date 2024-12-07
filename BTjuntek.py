@@ -173,6 +173,8 @@ class JTInfo:
 
                 key = params_keys[position]
                 values[key] = value_str
+
+        print(values)
         # check if dir_of_current exist if not asign if charging or dischargin exist
         if "dir_of_current" not in values and "charging" not in check:
             if "discharge" in values and "charge" not in values:
@@ -233,7 +235,7 @@ class JTInfo:
 
 
         logger.debug(values)
-
+        print(values) 
 #End of BLESNIFF Plug
 
 
@@ -263,13 +265,13 @@ class JTInfo:
                     f"DISCOVERY_PUB=homeassistant/sensor/{entry['object_id']}/config\n"
                     + "PL={json.dumps(entry)}\n"
                 )
-                publish.single(
+                ''' publish.single(
                     topic=f"homeassistant/sensor/{entry['object_id']}/config",
                     payload=json.dumps(entry),
                     retain=True,
                     hostname=config.MQTT_HOST,
                     auth=auth,
-                )
+                ) '''
 
             self.discovery_info_sent = True
 
@@ -280,9 +282,8 @@ class JTInfo:
             if not args.quiet:
                 print(f"{k} = {v}")
 
-        publish.multiple(mqtt_msgs, hostname=config.MQTT_HOST, auth=auth)
+        # publish.multiple(mqtt_msgs, hostname=config.MQTT_HOST, auth=auth)
         logger.info("Published updated sensor stats to MQTT")
-
 
 
 
